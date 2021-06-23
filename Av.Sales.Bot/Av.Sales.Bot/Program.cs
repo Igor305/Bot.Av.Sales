@@ -60,9 +60,17 @@ namespace Av.Sales.Bot.Entities
         {
             DateTime now = DateTime.Now;
 
-            if (now.Hour < 7 && now.Hour > 22)
+            if (now.Hour < 7 || now.Hour > 22)
             {
                 return;
+            }
+
+            if (now.Hour == 7)
+            {
+                if (File.Exists(pathLog))
+                {
+                    File.Delete(pathLog);
+                }
             }
 
             if (File.Exists(pathLog))
@@ -78,14 +86,6 @@ namespace Av.Sales.Bot.Entities
                             return;
                         }
                     }
-                }
-            }
-
-            if (now.Hour == 7)
-            {
-                if (File.Exists(pathLog))
-                {
-                    File.Delete(pathLog);
                 }
             }
 
