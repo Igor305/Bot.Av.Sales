@@ -65,7 +65,7 @@ namespace Av.Sales.Bot.Entities
                 return;
             }
 
-            if (now.Hour == 7)
+            if (now.Hour == 7 && now.Minute <= 30)
             {
                 if (File.Exists(pathLog))
                 {
@@ -291,37 +291,45 @@ namespace Av.Sales.Bot.Entities
 
         private static async Task<List<string>> getAllSales(IItExecutionPlanShopRepository itExecutionPlanShopRepository)
         {
-            List<ItExecutionPlanShop> itExecutionPlanShops = await itExecutionPlanShopRepository.getSales();
-
             List<string> allSales = new List<string>();
 
-            string sales = "";
-
-            foreach (ItExecutionPlanShop itExecutionPlanShop in itExecutionPlanShops)
+            try
             {
-                if (itExecutionPlanShop.PlanDay != null && itExecutionPlanShop.FactDay != null)
+                List<ItExecutionPlanShop> itExecutionPlanShops = await itExecutionPlanShopRepository.getSales();
+
+                string sales = "";
+
+                foreach (ItExecutionPlanShop itExecutionPlanShop in itExecutionPlanShops)
                 {
-                    decimal? percentPlan = itExecutionPlanShop.FactDay * 100 / itExecutionPlanShop.PlanDay;
-
-                    decimal percent = Math.Round(percentPlan ?? 0, 2);
-                    decimal fact = Math.Round(itExecutionPlanShop.FactDay ?? 0);
-
-                    string resultFact = formFact(fact);
-
-                    if (sales.Length <= 4050)
+                    if (itExecutionPlanShop.PlanDay != null && itExecutionPlanShop.FactDay != null)
                     {
-                        sales += $"{itExecutionPlanShop.StockId} - {resultFact}({percent}%)\n";
-                    }
+                        decimal? percentPlan = itExecutionPlanShop.FactDay * 100 / itExecutionPlanShop.PlanDay;
 
-                    if (sales.Length > 4050)
-                    {
-                        allSales.Add(sales);
-                        sales = "";
-                        sales += $"{itExecutionPlanShop.StockId} - {resultFact}({percent}%)\n";
+                        decimal percent = Math.Round(percentPlan ?? 0, 2);
+                        decimal fact = Math.Round(itExecutionPlanShop.FactDay ?? 0);
+
+                        string resultFact = formFact(fact);
+
+                        if (sales.Length <= 4050)
+                        {
+                            sales += $"{itExecutionPlanShop.StockId} - {resultFact}({percent}%)\n";
+                        }
+
+                        if (sales.Length > 4050)
+                        {
+                            allSales.Add(sales);
+                            sales = "";
+                            sales += $"{itExecutionPlanShop.StockId} - {resultFact}({percent}%)\n";
+                        }
                     }
                 }
+                allSales.Add(sales);
+
             }
-            allSales.Add(sales);
+            catch
+            {
+
+            }
 
             return allSales;
         }
@@ -330,47 +338,60 @@ namespace Av.Sales.Bot.Entities
         {
             string sales = await stringForMessageSales(itExecutionPlanShopRepository);
 
-            await botClient.SendTextMessageAsync(
-                chatId: idSalesStatistic,
-                text: sales
-                );
+            if (sales != "")
+            {
+
+                await botClient.SendTextMessageAsync(
+                    chatId: idSalesStatistic,
+                    text: sales
+                    );
+            }
 
             return sales;
         }
 
         private static async Task<string> stringForMessageSales(IItExecutionPlanShopRepository itExecutionPlanShopRepository)
         {
-            List<ItExecutionPlanShop> itExecutionPlanShops = await itExecutionPlanShopRepository.getSales();
+            string sales = "";
 
-            decimal? maxPlanDay = 0;
-            decimal? maxFactDay = 0;
-            foreach (ItExecutionPlanShop itExecutionPlanShop in itExecutionPlanShops)
+            try
             {
-                if (itExecutionPlanShop.PlanDay != null)
-                {
-                    maxPlanDay += itExecutionPlanShop.PlanDay;
-                }
+                List<ItExecutionPlanShop> itExecutionPlanShops = await itExecutionPlanShopRepository.getSales();
 
-                if (itExecutionPlanShop.FactDay != null)
+                decimal? maxPlanDay = 0;
+                decimal? maxFactDay = 0;
+                foreach (ItExecutionPlanShop itExecutionPlanShop in itExecutionPlanShops)
                 {
-                    maxFactDay += itExecutionPlanShop.FactDay;
+                    if (itExecutionPlanShop.PlanDay != null)
+                    {
+                        maxPlanDay += itExecutionPlanShop.PlanDay;
+                    }
+
+                    if (itExecutionPlanShop.FactDay != null)
+                    {
+                        maxFactDay += itExecutionPlanShop.FactDay;
+                    }
                 }
+                decimal? percentPlan = maxFactDay * 100 / maxPlanDay;
+
+                decimal maxFactD = maxFactDay ?? 0;
+                decimal percentP = percentPlan ?? 0;
+
+                decimal maxFact = Math.Round(maxFactD);
+                decimal percent = Math.Round(percentP, 2);
+
+                string resultMaxFact = formFact(maxFact);
+
+                DateTime now = DateTime.Now;
+                string date = now.ToShortDateString();
+                string time = now.ToShortTimeString();
+
+                sales = $"{date} на {time} - {resultMaxFact}({percent}%)";
             }
-            decimal? percentPlan = maxFactDay * 100 / maxPlanDay;
+            catch
+            {
 
-            decimal maxFactD = maxFactDay ?? 0;
-            decimal percentP = percentPlan ?? 0;
-
-            decimal maxFact = Math.Round(maxFactD);
-            decimal percent = Math.Round(percentP, 2);
-
-            string resultMaxFact = formFact(maxFact);
-
-            DateTime now = DateTime.Now;
-            string date = now.ToShortDateString();
-            string time = now.ToShortTimeString();
-
-            string sales = $"{date} на {time} - {resultMaxFact}({percent}%)";
+            }
 
             return sales;
         }
