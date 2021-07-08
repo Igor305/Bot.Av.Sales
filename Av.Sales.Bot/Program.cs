@@ -13,9 +13,9 @@ using System.Timers;
 using Telegram.Bot;
 using Telegram.Bot.Args;
 
-namespace Av.Sales.Bot.Entities
+namespace AvSalesBot
 {
-    class Program
+    public class Program
     {
         private readonly static string token = "1751551484:AAG4EElnp4JasnVeyu8RMJ4_Ckq0GUJ1XTI";
         private readonly static string idSalesStatistic = "-1001248328691";
@@ -28,8 +28,14 @@ namespace Av.Sales.Bot.Entities
 
         static async Task Main(string[] args)
         {
+            Program program = new Program();
+            await program.start();
+        }
 
+        public async Task start()
+        {
             IServiceCollection serviceCollection = new ServiceCollection()
+
                 .AddLogging()
                 .AddDbContext<AvroraContext>(opts => opts.UseSqlServer(connectionStringSQL03))
                 .AddScoped<IItExecutionPlanShopRepository, ItExecutionPlanShopRepository>();
@@ -47,13 +53,12 @@ namespace Av.Sales.Bot.Entities
 
             botClient.OnMessage += async (s, e) => await Bot_OnMessage(e, itExecutionPlanShopRepository);
 
-            aTimer = new Timer(1800000);
-            aTimer.Elapsed += async (s, e) => await getSalesStatistic(itExecutionPlanShopRepository);
-            aTimer.AutoReset = true;
-            aTimer.Start();
+            /* aTimer = new Timer(1800000);
+             aTimer.Elapsed += async (s, e) => await getSalesStatistic(itExecutionPlanShopRepository);
+             aTimer.AutoReset = true;
+             aTimer.Start();
 
-            System.Threading.Thread.Sleep(-1);
-
+             System.Threading.Thread.Sleep(-1);*/
         }
 
         private static async Task getSalesStatistic(IItExecutionPlanShopRepository itExecutionPlanShopRepository)
