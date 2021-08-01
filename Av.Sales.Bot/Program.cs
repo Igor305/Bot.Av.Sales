@@ -34,24 +34,35 @@ namespace AvSalesBot
 
         public async Task start()
         {
-            IServiceCollection serviceCollection = new ServiceCollection()
+            try
+            {
+                IServiceCollection serviceCollection = new ServiceCollection()
 
-                .AddLogging()
-                .AddDbContext<AvroraContext>(opts => opts.UseSqlServer(connectionStringSQL03))
-                .AddScoped<IItExecutionPlanShopRepository, ItExecutionPlanShopRepository>();
+                    .AddLogging()
+                    .AddDbContext<AvroraContext>(opts => opts.UseSqlServer(connectionStringSQL03))
+                    .AddScoped<IItExecutionPlanShopRepository, ItExecutionPlanShopRepository>();
 
-            IServiceProvider services = serviceCollection.BuildServiceProvider();
+                IServiceProvider services = serviceCollection.BuildServiceProvider();
 
-            IItExecutionPlanShopRepository itExecutionPlanShopRepository = services.GetService<IItExecutionPlanShopRepository>();
+                IItExecutionPlanShopRepository itExecutionPlanShopRepository = services.GetService<IItExecutionPlanShopRepository>();
 
-            botClient = new TelegramBotClient(token);
+                botClient = new TelegramBotClient(token);
 
-            botClient.StartReceiving();
+                botClient.StartReceiving();
 
-            await getSalesStatistic(itExecutionPlanShopRepository);
-            //await getMessageSalesGroup(itExecutionPlanShopRepository);
+                await getSalesStatistic(itExecutionPlanShopRepository);
+                //await getMessageSalesGroup(itExecutionPlanShopRepository);
 
-            botClient.OnMessage += async (s, e) => await Bot_OnMessage(e, itExecutionPlanShopRepository);
+                botClient.OnMessage += async (s, e) => await Bot_OnMessage(e, itExecutionPlanShopRepository);
+            }
+
+            catch (Exception ee)
+            {
+                await botClient.SendTextMessageAsync(
+                        chatId: "309516361",
+                        text: ee.Message
+                        );
+            }
 
             /* aTimer = new Timer(1800000);
              aTimer.Elapsed += async (s, e) => await getSalesStatistic(itExecutionPlanShopRepository);
@@ -264,9 +275,12 @@ namespace AvSalesBot
                     );
                 }
             }
-            catch
+            catch (Exception ee)
             {
-
+                await botClient.SendTextMessageAsync(
+                        chatId: "309516361",
+                        text: ee.Message
+                        );
             }
         }
 
@@ -297,21 +311,24 @@ namespace AvSalesBot
                             {
                                 decimal? percentPlan = itExecutionPlanShop.FactDay * 100 / itExecutionPlanShop.PlanDay;
 
-                                decimal percent = Math.Round(percentPlan ?? 0, 2);
+                                decimal percent = Math.Round(percentPlan ?? 0, 1);
 
                                 decimal fact = Math.Round(itExecutionPlanShop.FactDay ?? 0);
 
                                 string resultFact = formFact(fact);
 
-                                message = $"{itExecutionPlanShop.StockId} - {resultFact}({percent}%)\n";
+                                message = $"{itExecutionPlanShop.StockId} - {resultFact} ({percent}%)\n";
                             }
                         }
                     }
                 }
             }
-            catch
+            catch (Exception ee)
             {
-
+                await botClient.SendTextMessageAsync(
+                        chatId: "309516361",
+                        text: ee.Message
+                        );
             }
 
             return message;
@@ -354,21 +371,21 @@ namespace AvSalesBot
                         {
                             decimal? percentPlan = itExecutionPlanShop.FactDay * 100 / itExecutionPlanShop.PlanDay;
 
-                            decimal percent = Math.Round(percentPlan ?? 0, 2);
+                            decimal percent = Math.Round(percentPlan ?? 0, 1);
                             decimal fact = Math.Round(itExecutionPlanShop.FactDay ?? 0);
 
                             string resultFact = formFact(fact);
 
                             if (sales.Length <= 4050)
                             {
-                                sales += $"{itExecutionPlanShop.StockId} - {resultFact}({percent}%)\n";
+                                sales += $"{itExecutionPlanShop.StockId} - {resultFact} ({percent}%)\n";
                             }
 
                             if (sales.Length > 4050)
                             {
                                 allSales.Add(sales);
                                 sales = "";
-                                sales += $"{itExecutionPlanShop.StockId} - {resultFact}({percent}%)\n";
+                                sales += $"{itExecutionPlanShop.StockId} - {resultFact} ({percent}%)\n";
                             }
                         }
                     }
@@ -376,9 +393,12 @@ namespace AvSalesBot
                 allSales.Add(sales);
 
             }
-            catch
+            catch (Exception ee)
             {
-
+                await botClient.SendTextMessageAsync(
+                        chatId: "309516361",
+                        text: ee.Message
+                        );
             }
 
             return allSales;
@@ -410,6 +430,7 @@ namespace AvSalesBot
 
                 decimal? maxPlanDay = 0;
                 decimal? maxFactDay = 0;
+
                 foreach (ItExecutionPlanShop itExecutionPlanShop in itExecutionPlanShops)
                 {
                     if (itExecutionPlanShop.PlanDay != null)
@@ -422,25 +443,49 @@ namespace AvSalesBot
                         maxFactDay += itExecutionPlanShop.FactDay;
                     }
                 }
-                decimal? percentPlan = maxFactDay * 100 / maxPlanDay;
 
-                decimal maxFactD = maxFactDay ?? 0;
-                decimal percentP = percentPlan ?? 0;
+                if (maxPlanDay == 0)
+                {                 
 
-                decimal maxFact = Math.Round(maxFactD);
-                decimal percent = Math.Round(percentP, 2);
+                    decimal maxFactD = maxFactDay ?? 0;
 
-                string resultMaxFact = formFact(maxFact);
+                    decimal maxFact = Math.Round(maxFactD);
 
-                DateTime now = DateTime.Now;
-                string date = now.ToShortDateString();
-                string time = now.ToShortTimeString();
+                    string resultMaxFact = formFact(maxFact);
 
-                sales = $"{date} на {time} - {resultMaxFact}({percent}%)";
+                    DateTime now = DateTime.Now;
+                    string date = now.ToShortDateString();
+                    string time = now.ToShortTimeString();
+
+                    sales = $"{date} на {time} - {resultMaxFact}";
+                }
+
+                if (maxPlanDay != 0)
+                {
+                    decimal? percentPlan = maxFactDay * 100 / maxPlanDay;
+
+                    decimal maxFactD = maxFactDay ?? 0;
+                    decimal percentP = percentPlan ?? 0;
+
+                    decimal maxFact = Math.Round(maxFactD);
+                    decimal percent = Math.Round(percentP, 1);
+
+                    string resultMaxFact = formFact(maxFact);
+
+                    DateTime now = DateTime.Now;
+                    string date = now.ToShortDateString();
+                    string time = now.ToShortTimeString();
+
+                    sales = $"{date} на {time} - {resultMaxFact} ({percent}%)";
+                }
             }
-            catch
-            {
 
+            catch (Exception ee)
+            {
+                await botClient.SendTextMessageAsync(
+                        chatId: "309516361",
+                        text: ee.Message
+                        );
             }
 
             return sales;

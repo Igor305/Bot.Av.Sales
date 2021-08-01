@@ -132,7 +132,6 @@ C:\Users\i.talavyria\Desktop\project\Bot.Av.Sales\Av.Sales.Bot\bin\Release\net5.
 C:\Users\i.talavyria\Desktop\project\Bot.Av.Sales\Av.Sales.Bot\bin\Release\net5.0\runtimes\win\lib\netcoreapp3.0\System.Windows.Extensions.dll
 C:\Users\i.talavyria\Desktop\project\Bot.Av.Sales\Av.Sales.Bot\bin\Release\net5.0\DataAccessLayer.dll
 C:\Users\i.talavyria\Desktop\project\Bot.Av.Sales\Av.Sales.Bot\bin\Release\net5.0\DataAccessLayer.pdb
-C:\Users\i.talavyria\Desktop\project\Bot.Av.Sales\Av.Sales.Bot\obj\Release\net5.0\Av.Sales.Bot.csprojAssemblyReference.cache
 C:\Users\i.talavyria\Desktop\project\Bot.Av.Sales\Av.Sales.Bot\obj\Release\net5.0\Av.Sales.Bot.GeneratedMSBuildEditorConfig.editorconfig
 C:\Users\i.talavyria\Desktop\project\Bot.Av.Sales\Av.Sales.Bot\obj\Release\net5.0\Av.Sales.Bot.AssemblyInfoInputs.cache
 C:\Users\i.talavyria\Desktop\project\Bot.Av.Sales\Av.Sales.Bot\obj\Release\net5.0\Av.Sales.Bot.AssemblyInfo.cs
@@ -142,3 +141,4 @@ C:\Users\i.talavyria\Desktop\project\Bot.Av.Sales\Av.Sales.Bot\obj\Release\net5.
 C:\Users\i.talavyria\Desktop\project\Bot.Av.Sales\Av.Sales.Bot\obj\Release\net5.0\ref\Av.Sales.Bot.dll
 C:\Users\i.talavyria\Desktop\project\Bot.Av.Sales\Av.Sales.Bot\obj\Release\net5.0\Av.Sales.Bot.pdb
 C:\Users\i.talavyria\Desktop\project\Bot.Av.Sales\Av.Sales.Bot\obj\Release\net5.0\Av.Sales.Bot.genruntimeconfig.cache
+C:\Users\i.talavyria\Desktop\project\Bot.Av.Sales\Av.Sales.Bot\obj\Release\net5.0\Av.Sales.Bot.csproj.AssemblyReference.cache
