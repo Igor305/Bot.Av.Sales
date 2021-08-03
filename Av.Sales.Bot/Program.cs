@@ -462,6 +462,16 @@ namespace AvSalesBot
 
                 if (maxPlanDay != 0)
                 {
+                    maxFactDay = 0;
+
+                    foreach (ItExecutionPlanShop itExecutionPlanShop in itExecutionPlanShops)
+                    {
+                        if (itExecutionPlanShop.PlanDay != null && itExecutionPlanShop.FactDay != null)
+                        {
+                            maxFactDay += itExecutionPlanShop.FactDay;
+                        }
+                    }
+
                     decimal? percentPlan = maxFactDay * 100 / maxPlanDay;
 
                     decimal maxFactD = maxFactDay ?? 0;
@@ -543,7 +553,20 @@ namespace AvSalesBot
 
             else
             {
-                result = $"{maxFact}";
+                if (maxFact >= 100)
+                {
+                    result = $"{maxFact}";
+                }
+
+                if (maxFact < 100)
+                {
+                    result = $"0{maxFact}";
+                }
+
+                if (maxFact < 10)
+                {
+                    result = $"00{maxFact}";
+                }
             }
 
             return result;
