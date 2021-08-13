@@ -20,9 +20,10 @@ namespace AvSalesBot
         private readonly static string token = "1751551484:AAG4EElnp4JasnVeyu8RMJ4_Ckq0GUJ1XTI";
         private readonly static string idSalesStatistic = "-1001248328691";
         private readonly static string idSalesGroup = "-1001373411474";
-        private readonly static string connectionStringSQL03 = "Data Source=sql03;Initial Catalog=Avrora;Persist Security Info=True;User ID=j-PlanShops-Reader;Password=AE97rX3j5n";
+        private readonly static string idCreator = "309516361";
+        private readonly static string connectionStringSQL03 = "Data Source=sql03;Initial Catalog=Avrora;Persist Security Info=True;User ID=j-PlanShops-Reader;Password=AE97rX3j5n";      
 
-        private readonly static string pathLog = "Log.txt";
+        private readonly static string pathLog = "LogAvSalesBot.txt";
         private static Timer aTimer;
         private static TelegramBotClient botClient;
 
@@ -40,26 +41,28 @@ namespace AvSalesBot
 
                     .AddLogging()
                     .AddDbContext<AvroraContext>(opts => opts.UseSqlServer(connectionStringSQL03))
-                    .AddScoped<IItExecutionPlanShopRepository, ItExecutionPlanShopRepository>();
+                    .AddScoped<IItExecutionPlanShopRepository, ItExecutionPlanShopRepository>()
+                    .AddScoped<ISalesByCategoryManagerRepository, SalesByCategoryManagerRepository>();
 
                 IServiceProvider services = serviceCollection.BuildServiceProvider();
 
                 IItExecutionPlanShopRepository itExecutionPlanShopRepository = services.GetService<IItExecutionPlanShopRepository>();
+                ISalesByCategoryManagerRepository salesByCategoryManagerRepository = services.GetService<ISalesByCategoryManagerRepository>();
 
                 botClient = new TelegramBotClient(token);
 
                 botClient.StartReceiving();
 
-                await getSalesStatistic(itExecutionPlanShopRepository);
+                //await getSalesStatistic(itExecutionPlanShopRepository);
                 //await getMessageSalesGroup(itExecutionPlanShopRepository);
 
-                botClient.OnMessage += async (s, e) => await Bot_OnMessage(e, itExecutionPlanShopRepository);
+                botClient.OnMessage += async (s, e) => await Bot_OnMessage(e, itExecutionPlanShopRepository, salesByCategoryManagerRepository);
             }
 
             catch (Exception ee)
             {
                 await botClient.SendTextMessageAsync(
-                        chatId: "309516361",
+                        chatId: idCreator,
                         text: ee.Message
                         );
             }
@@ -67,9 +70,9 @@ namespace AvSalesBot
             /* aTimer = new Timer(1800000);
              aTimer.Elapsed += async (s, e) => await getSalesStatistic(itExecutionPlanShopRepository);
              aTimer.AutoReset = true;
-             aTimer.Start();
+             aTimer.Start();*/
 
-             System.Threading.Thread.Sleep(-1);*/
+             //System.Threading.Thread.Sleep(-1);
         }
 
         private static async Task getSalesStatistic(IItExecutionPlanShopRepository itExecutionPlanShopRepository)
@@ -125,7 +128,10 @@ namespace AvSalesBot
                 $"/x - где x - числовой номер магазина;отправляет личное " +
                 $"сообщение с данными продаж по указаному номеру магазина.\n" +
                 $"/help - список доступных команд\n" +
-                $"/summ - суммарные продажи по всей сети\n";
+                $"/summ - суммарные продажи по всей сети\n" +
+                $"/kmX - где x - номер категорийного менеджера (признака 4);\n" +
+                $"отправляет личное сообщение с данными продаж по категорийному менеджеру\n" +
+                $"/kmall -  продажи по всем категорийным менеджерам\n";
 
             await botClient.SendTextMessageAsync(
                 chatId: idSalesGroup,
@@ -133,7 +139,7 @@ namespace AvSalesBot
                 );
         }
 
-        private static async Task Bot_OnMessage(MessageEventArgs e, IItExecutionPlanShopRepository itExecutionPlanShopRepository)
+        private static async Task Bot_OnMessage(MessageEventArgs e, IItExecutionPlanShopRepository itExecutionPlanShopRepository, ISalesByCategoryManagerRepository salesByCategoryManagerRepository )
         {
             try
             {
@@ -219,6 +225,43 @@ namespace AvSalesBot
                                     );
                             }; break;
 
+                        case "kmall@Av_Sales_Bot":
+                        case "kmall":
+                            {
+                                await botClient.DeleteMessageAsync(
+                                     chatId: e.Message.Chat,
+                                     messageId: e.Message.MessageId
+                                );
+
+                                List<string> messages = await getAllCategoryManager(salesByCategoryManagerRepository);
+
+                                foreach (string message in messages)
+                                {
+                                    await botClient.SendTextMessageAsync(
+                                      chatId: e.Message.From.Id,
+                                      text: message
+                                    );
+                                }
+
+                            }; break;
+
+                        case "kmx@Av_Sales_Bot":
+                        case "kmx":
+                        case "kmX@Av_Sales_Bot":
+                        case "kmX":
+                            {
+                                await botClient.DeleteMessageAsync(
+                                       chatId: e.Message.Chat,
+                                       messageId: e.Message.MessageId
+                               );
+                                string message = "Вместо X, укажите номер категорийного менеджера (к примеру /km15)";
+
+                                await botClient.SendTextMessageAsync(
+                                  chatId: e.Message.From.Id,
+                                  text: message
+                                );
+                            }; break;                 
+
                         default:
                             {
                                 await botClient.DeleteMessageAsync(
@@ -226,17 +269,50 @@ namespace AvSalesBot
                                    messageId: e.Message.MessageId
                                 );
 
-                                string number = e.Message.Text.Trim('/');
+                                string temporarily = e.Message.Text.Trim('/');
 
                                 try
                                 {
-                                    int num = Int32.Parse(number);
+                                    string km = "";
+                                    try
+                                    {
+                                        if (temporarily.Substring(0, 2) == "km")
+                                        {
+                                            km = temporarily.Trim('k', 'm');
+
+                                            SalesByCategoryManager salesByCategoryManager = await salesByCategoryManagerRepository.getCategoryManager(int.Parse(km));
+
+                                            decimal salesByCM = Math.Round(salesByCategoryManager.SalesByCategoryManager1 ?? 0);
+
+                                            string sale = formFact(salesByCM);
+
+                                            string result = $"{sale} - {salesByCategoryManager.CategoryManagerName}";
+
+                                            await botClient.SendTextMessageAsync(
+                                              chatId: e.Message.From.Id,
+                                              text: result
+                                              );
+                                            return;
+                                        }
+                                    }
+                                    catch
+                                    {
+                                        string result = $"Отсутствуют данные по номеру категорийного менеджера - {km}";
+
+                                        await botClient.SendTextMessageAsync(
+                                              chatId: e.Message.From.Id,
+                                              text: result
+                                              );
+                                        return;
+                                    }
+
+                                    int num = Int32.Parse(temporarily);
 
                                     string message = await getOneShopInfo(itExecutionPlanShopRepository, num);
 
                                     if (message == "")
                                     {
-                                        message = $"Отсутствуют данные по номеру магазина - {number}";
+                                        message = $"Отсутствуют данные по номеру магазина - {temporarily}";
                                     }
 
                                     await botClient.SendTextMessageAsync(
@@ -255,8 +331,7 @@ namespace AvSalesBot
                                     );
 
                                 }
-                            }
-                            break;
+                            };  break;
 
                     }
                 }
@@ -278,7 +353,7 @@ namespace AvSalesBot
             catch (Exception ee)
             {
                 await botClient.SendTextMessageAsync(
-                        chatId: "309516361",
+                        chatId: idCreator,
                         text: ee.Message
                         );
             }
@@ -326,7 +401,7 @@ namespace AvSalesBot
             catch (Exception ee)
             {
                 await botClient.SendTextMessageAsync(
-                        chatId: "309516361",
+                        chatId: idCreator,
                         text: ee.Message
                         );
             }
@@ -396,12 +471,61 @@ namespace AvSalesBot
             catch (Exception ee)
             {
                 await botClient.SendTextMessageAsync(
-                        chatId: "309516361",
+                        chatId: idCreator,
                         text: ee.Message
                         );
             }
 
             return allSales;
+        }
+
+        private static async Task<List<string>> getAllCategoryManager(ISalesByCategoryManagerRepository salesByCategoryManagerRepository)
+        {
+            List<string> allCategoryManager = new List<string>();
+
+            try
+            {
+                List<SalesByCategoryManager> salesByCategoryManagers = await salesByCategoryManagerRepository.getCategoryManagers();
+
+                string sales = "";
+
+                foreach (SalesByCategoryManager salesByCategoryManager in salesByCategoryManagers)
+                {
+
+                    decimal sale = Math.Round(salesByCategoryManager.SalesByCategoryManager1 ?? 0);
+
+                    string result = formFact(sale);
+
+                    if (salesByCategoryManager.SalesByCategoryManager1 == 0)
+                    {
+                        result = salesByCategoryManager.SalesByCategoryManager1.ToString();
+                    }
+
+                    if (sales.Length <= 4050)
+                    {
+                        sales += $"{result} - {salesByCategoryManager.CategoryManagerName}\n";
+                    }
+
+                    if (sales.Length > 4050)
+                    {
+                        allCategoryManager.Add(sales);
+                        sales = "";
+                        sales += $"{result} - {salesByCategoryManager.CategoryManagerName}\n";
+                    }                    
+                }
+
+                allCategoryManager.Add(sales);
+
+            }
+            catch (Exception ee)
+            {
+                await botClient.SendTextMessageAsync(
+                        chatId: idCreator,
+                        text: ee.Message
+                        );
+            }
+
+            return allCategoryManager;
         }
 
         private static async Task<string> getMessageSalesStatistic(IItExecutionPlanShopRepository itExecutionPlanShopRepository)
@@ -462,17 +586,17 @@ namespace AvSalesBot
 
                 if (maxPlanDay != 0)
                 {
-                    maxFactDay = 0;
+                    decimal? maxFactDayByPlans = 0;
 
                     foreach (ItExecutionPlanShop itExecutionPlanShop in itExecutionPlanShops)
                     {
                         if (itExecutionPlanShop.PlanDay != null && itExecutionPlanShop.FactDay != null)
                         {
-                            maxFactDay += itExecutionPlanShop.FactDay;
+                            maxFactDayByPlans += itExecutionPlanShop.FactDay;
                         }
                     }
 
-                    decimal? percentPlan = maxFactDay * 100 / maxPlanDay;
+                    decimal? percentPlan = maxFactDayByPlans * 100 / maxPlanDay;
 
                     decimal maxFactD = maxFactDay ?? 0;
                     decimal percentP = percentPlan ?? 0;
@@ -493,7 +617,7 @@ namespace AvSalesBot
             catch (Exception ee)
             {
                 await botClient.SendTextMessageAsync(
-                        chatId: "309516361",
+                        chatId: idCreator,
                         text: ee.Message
                         );
             }
@@ -516,57 +640,44 @@ namespace AvSalesBot
                     decimal MmaxFact = Math.Truncate(TmaxFact / 1000);
                     TmaxFact = TmaxFact % 1000;
 
-                    if (TmaxFact >= 100)
-                    {
-                        result = $"{MmaxFact} {TmaxFact} {maxFact}";
-                    }
+                    string TmaxFactResult = amountZero(TmaxFact);
+                    string maxFactResult = amountZero(maxFact);
 
-                    if (TmaxFact < 100)
-                    {
-                        result = $"{MmaxFact} 0{TmaxFact} {maxFact}";
-                    }
-
-                    if (TmaxFact < 10)
-                    {
-                        result = $"{MmaxFact} 00{TmaxFact} {maxFact}";
-                    }                 
+                    result = $"{MmaxFact} {TmaxFactResult} {maxFactResult}";
                 }
 
                 else
                 {
-                    if (maxFact >= 100)
-                    {
-                        result = $"{TmaxFact} {maxFact}";
-                    }
-
-                    if (maxFact < 100)
-                    {
-                        result = $"{TmaxFact} 0{maxFact}";
-                    }
-
-                    if (maxFact < 10)
-                    {
-                        result = $"{TmaxFact} 00{maxFact}";
-                    }
+                    string maxFactResult = amountZero(maxFact);
+                    result = $"{TmaxFact} {maxFactResult}";                
                 }
             }
 
             else
             {
-                if (maxFact >= 100)
-                {
-                    result = $"{maxFact}";
-                }
+                result = $"{maxFact}";
+            }
 
-                if (maxFact < 100)
-                {
-                    result = $"0{maxFact}";
-                }
+            return result;
+        }
 
-                if (maxFact < 10)
-                {
-                    result = $"00{maxFact}";
-                }
+        private static string amountZero(decimal maxFact)
+        {
+            string result = "";
+
+            if (maxFact >= 100 )
+            {
+                result = $"{maxFact}";
+            }
+
+            if (maxFact < 100)
+            {
+                result = $"0{maxFact}";
+            }
+
+            if (maxFact < 10)
+            {
+                result = $"00{maxFact}";
             }
 
             return result;

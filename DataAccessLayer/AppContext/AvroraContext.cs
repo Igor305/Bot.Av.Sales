@@ -1,6 +1,4 @@
-﻿using System;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata;
+﻿using Microsoft.EntityFrameworkCore;
 
 #nullable disable
 
@@ -18,6 +16,9 @@ namespace DataAccessLayer.AppContext
         }
 
         public virtual DbSet<ItExecutionPlanShop> ItExecutionPlanShops { get; set; }
+        public virtual DbSet<ItPlanSaleStockOnDate> ItPlanSaleStockOnDates { get; set; }
+        public virtual DbSet<ItPlanSaleStockOnDateD> ItPlanSaleStockOnDateDs { get; set; }
+        public virtual DbSet<SalesByCategoryManager> SalesByCategoryManagers { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -59,6 +60,60 @@ namespace DataAccessLayer.AppContext
                 entity.Property(e => e.PlanDay).HasColumnType("numeric(21, 9)");
 
                 entity.Property(e => e.PlanMonth).HasColumnType("numeric(21, 9)");
+            });
+
+            modelBuilder.Entity<ItPlanSaleStockOnDate>(entity =>
+            {
+                entity.HasKey(e => e.ChId)
+                    .HasName("PK__it_PlanS__AF02F0B882429C72");
+
+                entity.ToTable("it_PlanSaleStockOnDate", "dbo");
+
+                entity.Property(e => e.ChId)
+                    .ValueGeneratedNever()
+                    .HasColumnName("ChID");
+
+                entity.Property(e => e.CreateDate).HasColumnType("smalldatetime");
+
+                entity.Property(e => e.DocDate).HasColumnType("smalldatetime");
+            });
+
+            modelBuilder.Entity<ItPlanSaleStockOnDateD>(entity =>
+            {
+                entity.HasKey(e => new { e.ChId, e.StockId })
+                    .HasName("PK__it_PlanS__9DCACA26A40BD7BB");
+
+                entity.ToTable("it_PlanSaleStockOnDateD", "dbo");
+
+                entity.Property(e => e.ChId).HasColumnName("ChID");
+
+                entity.Property(e => e.StockId).HasColumnName("StockID");
+
+                entity.Property(e => e.PlanSum).HasColumnType("numeric(21, 9)");
+
+                entity.HasOne(d => d.Ch)
+                    .WithMany(p => p.ItPlanSaleStockOnDateDs)
+                    .HasForeignKey(d => d.ChId)
+                    .HasConstraintName("FK__it_PlanSaleStockOnDateD_Sta__ChID");
+            });
+
+            modelBuilder.Entity<SalesByCategoryManager>(entity =>
+            {
+                entity.HasNoKey();
+
+                entity.ToTable("SalesByCategoryManager", "dashboard");
+
+                entity.Property(e => e.CategoryManagerId).HasColumnName("CategoryManagerID");
+
+                entity.Property(e => e.CategoryManagerName)
+                    .HasMaxLength(250)
+                    .IsUnicode(false);
+
+                entity.Property(e => e.Date).HasColumnType("smalldatetime");
+
+                entity.Property(e => e.SalesByCategoryManager1)
+                    .HasColumnType("numeric(21, 9)")
+                    .HasColumnName("SalesByCategoryManager");
             });
 
             OnModelCreatingPartial(modelBuilder);
