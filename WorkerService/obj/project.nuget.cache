@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "ecI8eZ1OMNv6WLhGcNuK+GtR2CcpH7gX1e2YIyzuwE1ZKnubB4bNUxZlZd3/lQCHf/lTjDMD/b31oWEscHcdsg==",
+  "dgSpecHash": "X3aBfMf3YI1kg5VQcOtrctYnJZuATbFHQ7r1CUNBhwsfdzgSPgPDiVJpBv5ytj0tez/+QpMXVXH9ttcpdJCAWA==",
   "success": true,
-  "projectFilePath": "C:\\Users\\i.talavyria\\Desktop\\project\\Bot.Av.Sales\\WorkerService\\WorkerService.csproj",
+  "projectFilePath": "C:\\Users\\i.talavyria\\Desktop\\project\\Bots\\Bot.Av.Sales\\WorkerService\\WorkerService.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\i.talavyria\\.nuget\\packages\\microsoft.csharp\\4.5.0\\microsoft.csharp.4.5.0.nupkg.sha512",
     "C:\\Users\\i.talavyria\\.nuget\\packages\\microsoft.data.sqlclient\\2.0.1\\microsoft.data.sqlclient.2.0.1.nupkg.sha512",

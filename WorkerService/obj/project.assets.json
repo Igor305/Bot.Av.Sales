@@ -8319,11 +8319,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\i.talavyria\\Desktop\\project\\Bot.Av.Sales\\WorkerService\\WorkerService.csproj",
+      "projectUniqueName": "C:\\Users\\i.talavyria\\Desktop\\project\\Bots\\Bot.Av.Sales\\WorkerService\\WorkerService.csproj",
       "projectName": "WorkerService",
-      "projectPath": "C:\\Users\\i.talavyria\\Desktop\\project\\Bot.Av.Sales\\WorkerService\\WorkerService.csproj",
+      "projectPath": "C:\\Users\\i.talavyria\\Desktop\\project\\Bots\\Bot.Av.Sales\\WorkerService\\WorkerService.csproj",
       "packagesPath": "C:\\Users\\i.talavyria\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\i.talavyria\\Desktop\\project\\Bot.Av.Sales\\WorkerService\\obj\\",
+      "outputPath": "C:\\Users\\i.talavyria\\Desktop\\project\\Bots\\Bot.Av.Sales\\WorkerService\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "C:\\Users\\i.talavyria\\AppData\\Roaming\\NuGet\\NuGet.Config",
@@ -8340,8 +8340,8 @@
         "net5.0": {
           "targetAlias": "net5.0",
           "projectReferences": {
-            "C:\\Users\\i.talavyria\\Desktop\\project\\Bot.Av.Sales\\Av.Sales.Bot\\Av.Sales.Bot.csproj": {
-              "projectPath": "C:\\Users\\i.talavyria\\Desktop\\project\\Bot.Av.Sales\\Av.Sales.Bot\\Av.Sales.Bot.csproj"
+            "C:\\Users\\i.talavyria\\Desktop\\project\\Bots\\Bot.Av.Sales\\Av.Sales.Bot\\Av.Sales.Bot.csproj": {
+              "projectPath": "C:\\Users\\i.talavyria\\Desktop\\project\\Bots\\Bot.Av.Sales\\Av.Sales.Bot\\Av.Sales.Bot.csproj"
             }
           }
         }

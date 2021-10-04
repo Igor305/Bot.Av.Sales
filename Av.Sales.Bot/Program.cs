@@ -53,7 +53,7 @@ namespace AvSalesBot
 
                 botClient.StartReceiving();
 
-                //await getSalesStatistic(itExecutionPlanShopRepository);
+                await getSalesStatistic(itExecutionPlanShopRepository);
                 //await getMessageSalesGroup(itExecutionPlanShopRepository);
 
                 botClient.OnMessage += async (s, e) => await Bot_OnMessage(e, itExecutionPlanShopRepository, salesByCategoryManagerRepository);
@@ -79,12 +79,12 @@ namespace AvSalesBot
         {
             DateTime now = DateTime.Now;
 
-            if (now.Hour < 7 || now.Hour > 22)
+            if (now.Hour < 7 || now.Hour > 22 )
             {
                 return;
             }
 
-            if (now.Hour == 7 && now.Minute <= 30)
+            if (now.Hour == 7 && now.Minute <= 30 )
             {
                 if (File.Exists(pathLog))
                 {
@@ -180,6 +180,7 @@ namespace AvSalesBot
                                         chatId: e.Message.Chat,
                                         messageId: e.Message.MessageId
                                 );
+
                                 string message = "Вместо x, укажите номер магазина (к примеру /5)";
 
                                 await botClient.SendTextMessageAsync(
@@ -195,6 +196,7 @@ namespace AvSalesBot
                                      chatId: e.Message.Chat,
                                      messageId: e.Message.MessageId
                                 );
+
                                 string message = await stringForMessageSales(itExecutionPlanShopRepository);
 
                                 await botClient.SendTextMessageAsync(
@@ -211,13 +213,17 @@ namespace AvSalesBot
                                     chatId: e.Message.Chat,
                                     messageId: e.Message.MessageId
                                 );
+
                                 string message = $"Список доступных команд:\n" +
                                     $"/all - отправляет личное сообщение с данными продаж по всем " +
                                     $"магазинам(кроме, где продаж за текущий день небыло)\n" +
                                     $"/x - где x - числовой номер магазина;отправляет личное " +
                                     $"сообщение с данными продаж по указаному номеру магазина.\n" +
                                     $"/help - список доступных команд\n" +
-                                    $"/summ - суммарные продажи по всей сети\n";
+                                    $"/summ - суммарные продажи по всей сети\n" +
+                                    $"/kmX - где x - номер категорийного менеджера (признака 4);\n" +
+                                    $"отправляет личное сообщение с данными продаж по категорийному менеджеру\n" +
+                                    $"/kmall -  продажи по всем категорийным менеджерам\n";
 
                                 await botClient.SendTextMessageAsync(
                                     chatId: e.Message.From.Id,
@@ -264,35 +270,38 @@ namespace AvSalesBot
 
                         default:
                             {
+                                string temporarily = e.Message.Text.Trim('/');
+
                                 await botClient.DeleteMessageAsync(
                                    chatId: e.Message.Chat,
                                    messageId: e.Message.MessageId
                                 );
-
-                                string temporarily = e.Message.Text.Trim('/');
 
                                 try
                                 {
                                     string km = "";
                                     try
                                     {
-                                        if (temporarily.Substring(0, 2) == "km")
+                                        if (temporarily.Length > 2)
                                         {
-                                            km = temporarily.Trim('k', 'm');
+                                            if (temporarily.Substring(0, 2) == "km")
+                                            {                                              
+                                                km = temporarily.Trim('k', 'm');
 
-                                            SalesByCategoryManager salesByCategoryManager = await salesByCategoryManagerRepository.getCategoryManager(int.Parse(km));
+                                                SalesByCategoryManager salesByCategoryManager = await salesByCategoryManagerRepository.getCategoryManager(int.Parse(km));
 
-                                            decimal salesByCM = Math.Round(salesByCategoryManager.SalesByCategoryManager1 ?? 0);
+                                                decimal salesByCM = Math.Round(salesByCategoryManager.SalesByCategoryManager1 ?? 0);
 
-                                            string sale = formFact(salesByCM);
+                                                string sale = formFact(salesByCM);
 
-                                            string result = $"{sale} - {salesByCategoryManager.CategoryManagerName}";
+                                                string result = $"{sale} - {salesByCategoryManager.CategoryManagerName}";
 
-                                            await botClient.SendTextMessageAsync(
-                                              chatId: e.Message.From.Id,
-                                              text: result
-                                              );
-                                            return;
+                                                await botClient.SendTextMessageAsync(
+                                                  chatId: e.Message.From.Id,
+                                                  text: result
+                                                  );
+                                                return;
+                                            }
                                         }
                                     }
                                     catch
