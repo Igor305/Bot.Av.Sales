@@ -81,15 +81,11 @@ namespace AvSalesBot
 
             if (now.Hour < 7 || now.Hour > 22 )
             {
-                return;
-            }
-
-            if (now.Hour == 7 && now.Minute <= 30 )
-            {
                 if (File.Exists(pathLog))
                 {
                     File.Delete(pathLog);
                 }
+                return;
             }
 
             if (File.Exists(pathLog))
