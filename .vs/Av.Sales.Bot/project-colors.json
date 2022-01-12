@@ -1,0 +1,26 @@
+{
+  "Version": 1,
+  "ProjectMap": {
+    "bb5b2bae-7d99-4315-ae84-9c5023806924": {
+      "ProjectGuid": "bb5b2bae-7d99-4315-ae84-9c5023806924",
+      "DisplayName": "Av.Sales.Bot",
+      "ColorIndex": 0
+    },
+    "bfdd7aaa-da61-48c5-ac42-fb67c9819d64": {
+      "ProjectGuid": "bfdd7aaa-da61-48c5-ac42-fb67c9819d64",
+      "DisplayName": "WorkerService",
+      "ColorIndex": 1
+    },
+    "a2fe74e1-b743-11d0-ae1a-00a0c90fffc3": {
+      "ProjectGuid": "a2fe74e1-b743-11d0-ae1a-00a0c90fffc3",
+      "DisplayName": "Miscellaneous Files",
+      "ColorIndex": -1
+    },
+    "d9a1857d-b3c5-4726-9d81-4f6d2ed09024": {
+      "ProjectGuid": "d9a1857d-b3c5-4726-9d81-4f6d2ed09024",
+      "DisplayName": "DataAccessLayer",
+      "ColorIndex": 2
+    }
+  },
+  "NextColorIndex": 3
+}

@@ -79,36 +79,39 @@ namespace AvSalesBot
         {
             DateTime now = DateTime.Now;
 
-            if (now.Hour < 7 || now.Hour > 22 )
+            if (now.Minute == 0)
             {
+                if (now.Hour < 7 || now.Hour > 22)
+                {
+                    if (File.Exists(pathLog))
+                    {
+                        File.Delete(pathLog);
+                    }
+                    return;
+                }
+
                 if (File.Exists(pathLog))
                 {
-                    File.Delete(pathLog);
-                }
-                return;
-            }
-
-            if (File.Exists(pathLog))
-            {
-                var text = File.ReadAllLines(pathLog, Encoding.UTF8);
-                foreach(string str in text)
-                {
-                    if (str.Contains("Hour:"))
+                    var text = File.ReadAllLines(pathLog, Encoding.UTF8);
+                    foreach (string str in text)
                     {
-                        string hour = str.Substring(5);
-                        if (hour == now.Hour.ToString())
+                        if (str.Contains("Hour:"))
                         {
-                            return;
+                            string hour = str.Substring(5);
+                            if (hour == now.Hour.ToString())
+                            {
+                                return;
+                            }
                         }
                     }
                 }
+
+                string message = await getMessageSalesStatistic(itExecutionPlanShopRepository);
+
+                string result = $"************************************************\nHour:{now.Hour}\n{message}\n";
+
+                await File.AppendAllTextAsync(pathLog, result);
             }
-
-            string message = await getMessageSalesStatistic(itExecutionPlanShopRepository);
-
-            string result = $"************************************************\nHour:{now.Hour}\n{message}\n";
-
-            await File.AppendAllTextAsync(pathLog, result);
 
         }
 
@@ -197,6 +200,22 @@ namespace AvSalesBot
 
                                 await botClient.SendTextMessageAsync(
                                   chatId: e.Message.From.Id,
+                                  text: message
+                                );
+
+                            }; break;
+                        case "summChannel@Av_Sales_Bot":
+                        case "summChannel":
+                            {
+                                await botClient.DeleteMessageAsync(
+                                     chatId: e.Message.Chat,
+                                     messageId: e.Message.MessageId
+                                );
+
+                                string message = await stringForMessageSales(itExecutionPlanShopRepository);
+
+                                await botClient.SendTextMessageAsync(
+                                  chatId: idSalesStatistic,
                                   text: message
                                 );
 

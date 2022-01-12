@@ -21,7 +21,7 @@ namespace WorkerService
                 AvSalesBot.Program program = new AvSalesBot.Program();
                 await program.start();
 
-                await Task.Delay(3600000, stoppingToken);
+                await Task.Delay(60000, stoppingToken);
             }
         }
     }
