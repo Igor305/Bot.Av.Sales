@@ -147,7 +147,6 @@ C:\Users\i.talavyria\Desktop\project\Bots\Bot.Av.Sales\Av.Sales.Bot\bin\Release\
 C:\Users\i.talavyria\Desktop\project\Bots\Bot.Av.Sales\Av.Sales.Bot\bin\Release\net5.0\Av.Sales.Bot.runtimeconfig.json
 C:\Users\i.talavyria\Desktop\project\Bots\Bot.Av.Sales\Av.Sales.Bot\bin\Release\net5.0\Av.Sales.Bot.runtimeconfig.dev.json
 C:\Users\i.talavyria\Desktop\project\Bots\Bot.Av.Sales\Av.Sales.Bot\bin\Release\net5.0\Av.Sales.Bot.dll
-C:\Users\i.talavyria\Desktop\project\Bots\Bot.Av.Sales\Av.Sales.Bot\bin\Release\net5.0\ref\Av.Sales.Bot.dll
 C:\Users\i.talavyria\Desktop\project\Bots\Bot.Av.Sales\Av.Sales.Bot\bin\Release\net5.0\Av.Sales.Bot.pdb
 C:\Users\i.talavyria\Desktop\project\Bots\Bot.Av.Sales\Av.Sales.Bot\bin\Release\net5.0\Microsoft.Data.SqlClient.dll
 C:\Users\i.talavyria\Desktop\project\Bots\Bot.Av.Sales\Av.Sales.Bot\bin\Release\net5.0\Microsoft.EntityFrameworkCore.dll
@@ -214,3 +213,4 @@ C:\Users\i.talavyria\Desktop\project\Bots\Bot.Av.Sales\Av.Sales.Bot\obj\Release\
 C:\Users\i.talavyria\Desktop\project\Bots\Bot.Av.Sales\Av.Sales.Bot\obj\Release\net5.0\ref\Av.Sales.Bot.dll
 C:\Users\i.talavyria\Desktop\project\Bots\Bot.Av.Sales\Av.Sales.Bot\obj\Release\net5.0\Av.Sales.Bot.pdb
 C:\Users\i.talavyria\Desktop\project\Bots\Bot.Av.Sales\Av.Sales.Bot\obj\Release\net5.0\Av.Sales.Bot.genruntimeconfig.cache
+C:\Users\i.talavyria\Desktop\project\Bots\Bot.Av.Sales\Av.Sales.Bot\obj\Release\net5.0\refint\Av.Sales.Bot.dll

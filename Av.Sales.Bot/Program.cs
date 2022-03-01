@@ -7,7 +7,6 @@ using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Text;
 using System.Threading.Tasks;
 using System.Timers;
 using Telegram.Bot;
@@ -32,7 +31,7 @@ namespace AvSalesBot
             Program program = new Program();
             await program.start();
         }
-
+        
         public async Task start()
         {
             try
@@ -42,12 +41,15 @@ namespace AvSalesBot
                     .AddLogging()
                     .AddDbContext<AvroraContext>(opts => opts.UseSqlServer(connectionStringSQL03))
                     .AddScoped<IItExecutionPlanShopRepository, ItExecutionPlanShopRepository>()
+                    .AddScoped<IItGetCashByStockRepository, ItGetCashByStockRepository>()
                     .AddScoped<ISalesByCategoryManagerRepository, SalesByCategoryManagerRepository>();
+
 
                 IServiceProvider services = serviceCollection.BuildServiceProvider();
 
                 IItExecutionPlanShopRepository itExecutionPlanShopRepository = services.GetService<IItExecutionPlanShopRepository>();
                 ISalesByCategoryManagerRepository salesByCategoryManagerRepository = services.GetService<ISalesByCategoryManagerRepository>();
+                IItGetCashByStockRepository itGetCashByStockRepository = services.GetService<IItGetCashByStockRepository>();
 
                 botClient = new TelegramBotClient(token);
 
@@ -56,7 +58,7 @@ namespace AvSalesBot
                 await getSalesStatistic(itExecutionPlanShopRepository);
                 //await getMessageSalesGroup(itExecutionPlanShopRepository);
 
-                botClient.OnMessage += async (s, e) => await Bot_OnMessage(e, itExecutionPlanShopRepository, salesByCategoryManagerRepository);
+                botClient.OnMessage += async (s, e) => await Bot_OnMessage(e, itExecutionPlanShopRepository, salesByCategoryManagerRepository, itGetCashByStockRepository);
             }
 
             catch (Exception ee)
@@ -90,6 +92,7 @@ namespace AvSalesBot
                     return;
                 }
 
+                /* Check File
                 if (File.Exists(pathLog))
                 {
                     var text = File.ReadAllLines(pathLog, Encoding.UTF8);
@@ -104,7 +107,7 @@ namespace AvSalesBot
                             }
                         }
                     }
-                }
+                }*/
 
                 string message = await getMessageSalesStatistic(itExecutionPlanShopRepository);
 
@@ -130,7 +133,9 @@ namespace AvSalesBot
                 $"/summ - суммарные продажи по всей сети\n" +
                 $"/kmX - где x - номер категорийного менеджера (признака 4);\n" +
                 $"отправляет личное сообщение с данными продаж по категорийному менеджеру\n" +
-                $"/kmall -  продажи по всем категорийным менеджерам\n";
+                $"/kmall -  продажи по всем категорийным менеджерам\n" +
+                $"/summcash - суммарная выдача налички из касса\n" +
+                $"/allcash - выдача налички из кассы в разрезе магазинов";
 
             await botClient.SendTextMessageAsync(
                 chatId: idSalesGroup,
@@ -138,7 +143,7 @@ namespace AvSalesBot
                 );
         }
 
-        private static async Task Bot_OnMessage(MessageEventArgs e, IItExecutionPlanShopRepository itExecutionPlanShopRepository, ISalesByCategoryManagerRepository salesByCategoryManagerRepository )
+        private static async Task Bot_OnMessage(MessageEventArgs e, IItExecutionPlanShopRepository itExecutionPlanShopRepository, ISalesByCategoryManagerRepository salesByCategoryManagerRepository, IItGetCashByStockRepository itGetCashByStockRepository)
         {
             try
             {
@@ -156,12 +161,25 @@ namespace AvSalesBot
                         case "all@Av_Sales_Bot":
                         case "all":
                             {
-                                await botClient.DeleteMessageAsync(
-                                     chatId: e.Message.Chat,
-                                     messageId: e.Message.MessageId
-                                );
+                                await deleteMessage(e);
 
                                 List<string> messages = await getAllSales(itExecutionPlanShopRepository);
+
+                                foreach (string message in messages)
+                                {
+                                    await botClient.SendTextMessageAsync(
+                                      chatId: e.Message.From.Id,
+                                      text: message
+                                    );
+                                }
+                            }; break;
+
+                        case "allcash@Av_Sales_Bot":
+                        case "allcash":
+                            {
+                                await deleteMessage(e);
+
+                                List<string> messages = await getAllCash(itGetCashByStockRepository);
 
                                 foreach (string message in messages)
                                 {
@@ -175,10 +193,7 @@ namespace AvSalesBot
                         case "x@Av_Sales_Bot":
                         case "x":
                             {
-                                await botClient.DeleteMessageAsync(
-                                        chatId: e.Message.Chat,
-                                        messageId: e.Message.MessageId
-                                );
+                                await deleteMessage(e);
 
                                 string message = "Вместо x, укажите номер магазина (к примеру /5)";
 
@@ -191,10 +206,7 @@ namespace AvSalesBot
                         case "summ@Av_Sales_Bot":                  
                         case "summ":
                             {
-                                await botClient.DeleteMessageAsync(
-                                     chatId: e.Message.Chat,
-                                     messageId: e.Message.MessageId
-                                );
+                                await deleteMessage(e);
 
                                 string message = await stringForMessageSales(itExecutionPlanShopRepository);
 
@@ -204,13 +216,25 @@ namespace AvSalesBot
                                 );
 
                             }; break;
+
+                        case "summcash@Av_Sales_Bot":
+                        case "summcash":
+                            {
+                                await deleteMessage(e);
+
+                                string message = await stringForMessagesCash(itGetCashByStockRepository);
+
+                                await botClient.SendTextMessageAsync(
+                                  chatId: e.Message.From.Id,
+                                  text: message
+                                );
+
+                            };break;
+
                         case "summChannel@Av_Sales_Bot":
                         case "summChannel":
                             {
-                                await botClient.DeleteMessageAsync(
-                                     chatId: e.Message.Chat,
-                                     messageId: e.Message.MessageId
-                                );
+                                await deleteMessage(e);
 
                                 string message = await stringForMessageSales(itExecutionPlanShopRepository);
 
@@ -224,21 +248,24 @@ namespace AvSalesBot
                         case "help@Av_Sales_Bot":
                         case "help":
                             {
-                                await botClient.DeleteMessageAsync(
-                                    chatId: e.Message.Chat,
-                                    messageId: e.Message.MessageId
-                                );
+                                await deleteMessage(e);
 
-                                string message = $"Список доступных команд:\n" +
-                                    $"/all - отправляет личное сообщение с данными продаж по всем " +
-                                    $"магазинам(кроме, где продаж за текущий день небыло)\n" +
-                                    $"/x - где x - числовой номер магазина;отправляет личное " +
-                                    $"сообщение с данными продаж по указаному номеру магазина.\n" +
-                                    $"/help - список доступных команд\n" +
-                                    $"/summ - суммарные продажи по всей сети\n" +
-                                    $"/kmX - где x - номер категорийного менеджера (признака 4);\n" +
-                                    $"отправляет личное сообщение с данными продаж по категорийному менеджеру\n" +
-                                    $"/kmall -  продажи по всем категорийным менеджерам\n";
+                                string message = $"Для начала работы с ботом необходимо:\n" +
+                                                $"1.Нажать на бота @Av_Sales_Bot\n" +
+                                                $"2.Внизу чата нажать 'Начать'\n" +
+                                                $"3.Теперь бот сможет отправлять Вам личные сообщения.\n" +
+                                                $"Список доступных команд:\n" +
+                                                $"/all - отправляет личное сообщение с данными продаж по всем " +
+                                                $"магазинам(кроме, где продаж за текущий день небыло)\n" +
+                                                $"/x - где x - числовой номер магазина;отправляет личное " +
+                                                $"сообщение с данными продаж по указаному номеру магазина.\n" +
+                                                $"/help - список доступных команд\n" +
+                                                $"/summ - суммарные продажи по всей сети\n" +
+                                                $"/kmX - где x - номер категорийного менеджера (признака 4);\n" +
+                                                $"отправляет личное сообщение с данными продаж по категорийному менеджеру\n" +
+                                                $"/kmall -  продажи по всем категорийным менеджерам\n" +
+                                                $"/summcash - суммарная выдача налички из касса\n" +
+                                                $"/allcash - выдача налички из кассы в разрезе магазинов";
 
                                 await botClient.SendTextMessageAsync(
                                     chatId: e.Message.From.Id,
@@ -249,10 +276,7 @@ namespace AvSalesBot
                         case "kmall@Av_Sales_Bot":
                         case "kmall":
                             {
-                                await botClient.DeleteMessageAsync(
-                                     chatId: e.Message.Chat,
-                                     messageId: e.Message.MessageId
-                                );
+                                await deleteMessage(e);
 
                                 List<string> messages = await getAllCategoryManager(salesByCategoryManagerRepository);
 
@@ -271,10 +295,8 @@ namespace AvSalesBot
                         case "kmX@Av_Sales_Bot":
                         case "kmX":
                             {
-                                await botClient.DeleteMessageAsync(
-                                       chatId: e.Message.Chat,
-                                       messageId: e.Message.MessageId
-                               );
+                                await deleteMessage(e);
+
                                 string message = "Вместо X, укажите номер категорийного менеджера (к примеру /km15)";
 
                                 await botClient.SendTextMessageAsync(
@@ -287,10 +309,7 @@ namespace AvSalesBot
                             {
                                 string temporarily = e.Message.Text.Trim('/');
 
-                                await botClient.DeleteMessageAsync(
-                                   chatId: e.Message.Chat,
-                                   messageId: e.Message.MessageId
-                                );
+                                await deleteMessage(e);
 
                                 try
                                 {
@@ -361,10 +380,7 @@ namespace AvSalesBot
                 }
                 else
                 {
-                    await botClient.DeleteMessageAsync(
-                        chatId: e.Message.Chat,
-                        messageId: e.Message.MessageId
-                    );
+                    await deleteMessage(e);
 
                     string message = "Вы указали не правильную команду (/help)";
 
@@ -374,13 +390,17 @@ namespace AvSalesBot
                     );
                 }
             }
-            catch (Exception ee)
+            catch (Exception except)
             {
-                await botClient.SendTextMessageAsync(
-                        chatId: idCreator,
-                        text: ee.Message
-                        );
             }
+        }
+
+        private static async Task deleteMessage(MessageEventArgs e)
+        {
+            await botClient.DeleteMessageAsync(
+                chatId: e.Message.Chat,
+                messageId: e.Message.MessageId
+             );
         }
 
         private static async Task<string> getOneShopInfo(IItExecutionPlanShopRepository itExecutionPlanShopRepository, int number)
@@ -424,10 +444,6 @@ namespace AvSalesBot
             }
             catch (Exception ee)
             {
-                await botClient.SendTextMessageAsync(
-                        chatId: idCreator,
-                        text: ee.Message
-                        );
             }
 
             return message;
@@ -490,17 +506,49 @@ namespace AvSalesBot
                     }
                 }
                 allSales.Add(sales);
-
             }
             catch (Exception ee)
             {
-                await botClient.SendTextMessageAsync(
-                        chatId: idCreator,
-                        text: ee.Message
-                        );
             }
 
             return allSales;
+        }
+
+        private static async Task<List<string>> getAllCash(IItGetCashByStockRepository itGetCashByStockRepository)
+        {
+            List<string> allCashs = new List<string>();
+
+            try
+            {
+                List<ItGetCashByStock> itGetCashByStocks = await itGetCashByStockRepository.getAll();
+
+                string cash = "";
+
+                foreach (ItGetCashByStock itGetCashByStock in itGetCashByStocks)
+                {
+                    if (itGetCashByStock != null)
+                    {
+                        if (cash.Length <= 4050)
+                        {
+                            string sum = formFact(Math.Round(itGetCashByStock.SumGetCash ?? 0));
+                            cash += $"{itGetCashByStock.StockId} - {sum}\n";
+                        }
+                        else
+                        {
+                            allCashs.Add(cash);
+                            cash = "";
+                            string sum = formFact(Math.Round(itGetCashByStock.SumGetCash ?? 0));
+                            cash += $"{itGetCashByStock.StockId} - {Math.Round(itGetCashByStock.SumGetCash ?? 0)}\n";
+                        }
+                    }
+                }
+                allCashs.Add(cash);
+            }
+            catch (Exception ee)
+            { 
+            }
+
+            return allCashs;
         }
 
         private static async Task<List<string>> getAllCategoryManager(ISalesByCategoryManagerRepository salesByCategoryManagerRepository)
@@ -543,10 +591,6 @@ namespace AvSalesBot
             }
             catch (Exception ee)
             {
-                await botClient.SendTextMessageAsync(
-                        chatId: idCreator,
-                        text: ee.Message
-                        );
             }
 
             return allCategoryManager;
@@ -639,14 +683,33 @@ namespace AvSalesBot
             }
 
             catch (Exception ee)
-            {
-                await botClient.SendTextMessageAsync(
-                        chatId: idCreator,
-                        text: ee.Message
-                        );
+            { 
             }
 
             return sales;
+        }
+
+        private static async Task<string> stringForMessagesCash(IItGetCashByStockRepository itGetCashByStockRepository)
+        {
+            string cash = "";
+            try
+            {
+                decimal? summ = await itGetCashByStockRepository.getSumm();
+
+                DateTime now = DateTime.Now;
+                string date = now.ToShortDateString();
+                string time = now.ToShortTimeString();
+                
+                string summCash = formFact(Math.Round(summ ?? 0));
+              
+                cash = $"{date} на {time} - {summCash} грн";
+            }
+            catch 
+            {
+
+            }
+
+            return cash;
         }
 
         private static string formFact(decimal maxFact)

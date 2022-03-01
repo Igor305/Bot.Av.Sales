@@ -32,7 +32,6 @@ C:\Users\i.talavyria\Desktop\project\Bots\Bot.Av.Sales\DataAccessLayer\bin\Relea
 C:\Users\i.talavyria\Desktop\project\Bots\Bot.Av.Sales\DataAccessLayer\bin\Release\net5.0\DataAccessLayer.runtimeconfig.json
 C:\Users\i.talavyria\Desktop\project\Bots\Bot.Av.Sales\DataAccessLayer\bin\Release\net5.0\DataAccessLayer.runtimeconfig.dev.json
 C:\Users\i.talavyria\Desktop\project\Bots\Bot.Av.Sales\DataAccessLayer\bin\Release\net5.0\DataAccessLayer.dll
-C:\Users\i.talavyria\Desktop\project\Bots\Bot.Av.Sales\DataAccessLayer\bin\Release\net5.0\ref\DataAccessLayer.dll
 C:\Users\i.talavyria\Desktop\project\Bots\Bot.Av.Sales\DataAccessLayer\bin\Release\net5.0\DataAccessLayer.pdb
 C:\Users\i.talavyria\Desktop\project\Bots\Bot.Av.Sales\DataAccessLayer\obj\Release\net5.0\DataAccessLayer.csproj.AssemblyReference.cache
 C:\Users\i.talavyria\Desktop\project\Bots\Bot.Av.Sales\DataAccessLayer\obj\Release\net5.0\DataAccessLayer.GeneratedMSBuildEditorConfig.editorconfig
@@ -43,3 +42,4 @@ C:\Users\i.talavyria\Desktop\project\Bots\Bot.Av.Sales\DataAccessLayer\obj\Relea
 C:\Users\i.talavyria\Desktop\project\Bots\Bot.Av.Sales\DataAccessLayer\obj\Release\net5.0\ref\DataAccessLayer.dll
 C:\Users\i.talavyria\Desktop\project\Bots\Bot.Av.Sales\DataAccessLayer\obj\Release\net5.0\DataAccessLayer.pdb
 C:\Users\i.talavyria\Desktop\project\Bots\Bot.Av.Sales\DataAccessLayer\obj\Release\net5.0\DataAccessLayer.genruntimeconfig.cache
+C:\Users\i.talavyria\Desktop\project\Bots\Bot.Av.Sales\DataAccessLayer\obj\Release\net5.0\refint\DataAccessLayer.dll

@@ -16,6 +16,7 @@ namespace DataAccessLayer.AppContext
         }
 
         public virtual DbSet<ItExecutionPlanShop> ItExecutionPlanShops { get; set; }
+        public virtual DbSet<ItGetCashByStock> ItGetCashByStocks { get; set; }
         public virtual DbSet<ItPlanSaleStockOnDate> ItPlanSaleStockOnDates { get; set; }
         public virtual DbSet<ItPlanSaleStockOnDateD> ItPlanSaleStockOnDateDs { get; set; }
         public virtual DbSet<SalesByCategoryManager> SalesByCategoryManagers { get; set; }
@@ -60,6 +61,20 @@ namespace DataAccessLayer.AppContext
                 entity.Property(e => e.PlanDay).HasColumnType("numeric(21, 9)");
 
                 entity.Property(e => e.PlanMonth).HasColumnType("numeric(21, 9)");
+            });
+
+            modelBuilder.Entity<ItGetCashByStock>(entity =>
+            {
+                entity.HasKey(e => e.StockId)
+                    .HasName("PK__it_GetCa__2C83A9E2C533BFB6");
+
+                entity.ToTable("it_GetCashByStocks", "dbo");
+
+                entity.Property(e => e.StockId)
+                    .ValueGeneratedNever()
+                    .HasColumnName("StockID");
+
+                entity.Property(e => e.SumGetCash).HasColumnType("numeric(21, 9)");
             });
 
             modelBuilder.Entity<ItPlanSaleStockOnDate>(entity =>
